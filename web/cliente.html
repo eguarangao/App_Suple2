@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="app">
+    <head>
+        <title>App - Cliente</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="resources/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/cssLibrary/open-iconic-bootstrap.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/general.css" rel="stylesheet" type="text/css"/>
+
+        <script src="resources/js/jquery.min.js" type="text/javascript"></script>
+        <script src="resources/js/angular.js" type="text/javascript"></script>
+        <script src="resources/js/bootstrap.min.js" type="text/javascript"></script>
+        <script src="resources/js/sweetalert2.min.js" type="text/javascript"></script>
+        <script src="resources/js/toastr.min.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="controllerCliente">
+
+        <div class="modal fade" id="addProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Nuevo Producto</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="col-form-label"> Codigo: </label>
+                                    <input disabled="" id="ip_codigo" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label  class="col-form-label"> Cantidad: </label>
+                                    <input id="ip_cantidad" type="number" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button ng-click="aniadir()" type="button" class="btn btn-primary">Añadir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-form">
+                <div class="head">
+                    <div class="float-left rounded">
+                        <strong class="text-light"> Usuario: </strong>
+                        <span id="nombre_usuario" class="text-light" style="margin-right: 30px"> undefined </span>
+                        <strong class="text-light"> Permiso: </strong>
+                        <span id="cargo" class="text-light" style="margin-right: 30px"> undefined </span>
+                        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm float-right"> <span class="oi oi-power-standby"></span> Cerrar Sesión </button>
+                    </div>
+                </div>
+                <div id="frm1" style="padding: 20px">
+                    <button id="btn1" class="btn btn-light" style="display: grid; margin: auto"> <img src="resources/img/nuevopedido.svg" alt="" width="100"> Nuevo pedido </button>
+                    <strong> LISTADO DE PEDIDOS </strong>
+                    <table class="table table-sm table-hover table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Fecha envio</th>
+                                <th scope="col">Tienda</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Descuento %</th>
+                                <th scope="col">Total a pagar</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="viewData in datosPedido">
+                                <th scope="row">{{viewData.id_encapedido}}</th>
+                                <td>{{viewData.fecha_venta}}</td>
+                                <td>{{viewData.nombre_tienda}}</td>
+                                <td>$ {{viewData.total}}</td>
+                                <td>{{viewData.descuento}}</td>
+                                <td>$ {{viewData.total - (viewData.total * viewData.descuento / 100)}} </td>
+                                <td>
+                                    <h6><span ng-show="viewData.estado === 'p'" class="badge badge-warning">Pendiente</span></h6>
+                                    <h6><span ng-show="viewData.estado === 'd'" class="badge badge-success">Despachado</span></h6>
+                                    <h6><span ng-show="viewData.estado === 'c'" class="badge badge-danger">Cancelado</span></h6>
+                                </td>
+                                <td>
+                                    <button ng-show="viewData.estado === 'p'" ng-click="cancelarPedido(viewData.id_encapedido, viewData.fecha_venta, viewData.descuento, viewData.total)" class="btn btn-danger btn-sm"><span class="oi oi-trash"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <strong> LISTADO DE PEDIDOS CANCELADOS</strong>
+                    <table class="table table-sm table-hover table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Fecha envio</th>
+                                <th scope="col">Tienda</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Descuento %</th>
+                                <th scope="col">Total a pagar</th>
+                                <th scope="col">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="viewData in datosPedidoCancelados">
+                                <th scope="row">{{viewData.id_pedeliminado}}</th>
+                                <td>{{viewData.fecha_pedido}}</td>
+                                <td>{{viewData.nombre_tienda}}</td>
+                                <td>$ {{viewData.total}}</td>
+                                <td>{{viewData.descuento}}</td>
+                                <td>$ {{viewData.total - (viewData.total * viewData.descuento / 100)}} </td>
+                                <td>
+                                    <h6><span class="badge badge-danger">Cancelado</span></h6>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="frm0" style="padding: 20px">
+                    <button id="btn0" class="btn btn-light" style="display: grid; margin: auto"> <img src="resources/img/mipedidos.svg" alt="" width="100"> Mis pedidos </button>
+                    <div class="form-group">
+                        <label> Tiendas Disponibles: </label>
+                        <select id="ip_tienda" name="tipo_usuario" class="form-control form-control-sm">
+                            <option ng-show="view.tipo_usuario === 'tienda'"
+                                    ng-repeat="view in datosTienda" value="{{view.id_usuario}}">{{view.nombre_tienda}}</option>
+                        </select>
+                    </div>
+                    <strong> Productos disponibles </strong>
+                    <table class="table table-sm table-hover table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Stock</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="view in listaProductos">
+                                <th scope="row">{{view.id_producto}}</th>
+                                <td>{{view.nombre}}</td>
+                                <td>{{view.stock}}</td>
+                                <td>$ {{view.precio_unit}}</td>
+                                <td> 
+                                    <button ng-click="seleccionarProducto($index)" class="btn btn-success btn-sm"> <span class="oi oi-plus"></span> </button>
+                                </td>                                
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="color: red; font-weight: bold">
+                        Tienes {{descuento.porcentaje}} ventas en este mes, por lo tanto tendras derecho a un {{descuento.porcentaje}}% de descuento en el próximo pedido que realices.
+                    </p>
+                    <strong> Productos a realizar el pedido </strong>
+
+                    <table class="table table-sm table-hover table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Producto</th>
+                                <th scope="col">Cantidad</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Accion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="viewData in detalle">
+                                <th scope="row">{{viewData.id}}</th>
+                                <th scope="row">{{viewData.producto}}</th>
+                                <td>{{viewData.cantidad}}</td>
+                                <td>$ {{viewData.precio}}</td>
+                                <td>
+                                    <button ng-click="eliminar(viewData.id, viewData.cantidad, viewData.precio, $index)" class="btn btn-danger btn-sm"><span class="oi oi-trash"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="form-group" style="text-align: left">
+                        <h4>
+                            <strong>SubTotal:</strong> <span> {{totales.subtotal}} </span> <br>
+                            <strong>Iva:</strong> <span> {{totales.iva}} </span> <br>
+                        </h4>
+                        <h2>
+                            <strong>Total a pagar:</strong> <span class="text-danger"> {{totales.totalapagar}} </span> <br>
+                        </h2>
+                    </div>
+                    <div class="form-group" style="text-align: center">
+                        <button id="btn-realizarpedido" class="btn btn-success btn-sm rounded-pill"> <span class="oi oi-dollar"></span> Realizar Pedido </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <script src="resources/js/js_general.js" type="text/javascript"></script>
+        <script src="resources/js/js_cliente.js" type="text/javascript"></script>
+    </body>
+</html>
